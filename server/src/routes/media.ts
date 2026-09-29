@@ -8,19 +8,11 @@ const LIMITS: Record<string, number> = {
   video: 100 * 1024 * 1024,
 };
 
-let octetStreamParserRegistered = false;
-
 function ensureOctetStreamParser(app: FastifyInstance): void {
-  if (octetStreamParserRegistered) return;
-  try {
-    app.addContentTypeParser("application/octet-stream", { parseAs: "buffer" }, (_request, body, done) => {
-      done(null, body);
-    });
-  } catch (error) {
-    const err = error as { code?: string };
-    if (err.code !== "FST_ERR_CTP_ALREADY_PRESENT") throw error;
-  }
-  octetStreamParserRegistered = true;
+  if (app.hasContentTypeParser("application/octet-stream")) return;
+  app.addContentTypeParser("application/octet-stream", { parseAs: "buffer" }, (_request, body, done) => {
+    done(null, body);
+  });
 }
 
 export function registerMedia(app: FastifyInstance): void {
