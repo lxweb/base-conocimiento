@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Base de conocimiento</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f4efe4;
+        --ink: #241c16;
+        --muted: #6d6256;
+        --line: #d9cbb6;
+        --mark: #8d3b2c;
+        --card: #fffaf2;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(141, 59, 44, 0.08), transparent 28rem),
+          var(--paper);
+        color: var(--ink);
+        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Liberation Serif", "Noto Serif", Georgia, serif;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 1.25rem 2rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .mark {
+        margin: 0;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+      }
+      nav { display: flex; gap: 0.5rem; }
+      main { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+      h1 { font-size: 2.6rem; font-weight: 500; line-height: 1.05; margin: 0 0 0.4rem; }
+      h2, h3 { font-weight: 500; }
+      p.lede { color: var(--muted); margin-top: 0; }
+      button, input, select, textarea {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        cursor: pointer;
+      }
+      button.ghost, nav button {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      input, select, textarea {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 0.4rem;
+        padding: 0.55rem 0.7rem;
+      }
+      textarea { min-height: 6rem; }
+      label { display: grid; gap: 0.3rem; margin: 0.8rem 0; }
+      .inline { display: flex; gap: 0.5rem; align-items: center; margin: 0.4rem 0 0.8rem; }
+      .inline input, .inline select { width: auto; flex: 1; }
+      .notice { color: var(--mark); min-height: 1.2rem; }
+      .tree, .tree ol, .tree ul { padding-left: 1.1rem; }
+      .prompt { font-size: 1.7rem; line-height: 1.25; }
+      article {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--mark);
+      }
+      .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      #login { max-width: 28rem; }
+    </style>
+  </head>
+  <body>
+    <header hidden>
+      <p class="mark">Base de conocimiento</p>
+      <nav>
+        <button id="nav-arbol" type="button">Árbol</button>
+        <button id="nav-cola" type="button">Cola de hoy</button>
+      </nav>
+    </header>
+    <main>
+      <section id="login">
+        <p class="mark">Estudio</p>
+        <h1>Entrá para seguir la cola de hoy.</h1>
+        <p class="lede">La contraseña abre el servidor. Lo que todavía no se confirmó queda en esta máquina.</p>
+        <form>
+          <label>
+            Contraseña
+            <input name="password" type="password" autocomplete="current-password" />
+          </label>
+          <button type="submit">Entrar</button>
+        </form>
+        <p class="notice"></p>
+      </section>
+      <section id="arbol" hidden>
+        <h1>Árbol</h1>
+        <div class="tree-root"></div>
+      </section>
+      <section id="ficha" hidden>
+        <h1>Ficha</h1>
+        <p class="notice"></p>
+        <div class="ficha-root"></div>
+      </section>
+      <section id="cola" hidden>
+        <h1>Cola de hoy</h1>
+        <div class="cola-root"></div>
+      </section>
+    </main>
+    <script type="module" src="./boot.ts"></script>
+  </body>
+</html>

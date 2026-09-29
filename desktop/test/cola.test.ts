@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { presentItem, type SessionItem } from "../src/renderer/cola.ts";
+import { presentItem, toSessionItem, type SessionItem } from "../src/renderer/cola.ts";
 
 const item: SessionItem = {
   id: "item-1",
@@ -50,4 +50,17 @@ test("verdadero o falso se puede encolar en cuanto se elige", () => {
   const view = presentItem(booleanItem, { booleanChoice: false });
   assert.equal(view.readyToEnqueue, true);
   assert.equal(view.explanation, "Un cuerpo conserva su estado.");
+});
+
+test("la copia del servidor usa conocimiento y se lee como knowledge", () => {
+  const adapted = toSessionItem({
+    id: "item-1",
+    snapshot: {
+      question: item.snapshot.question,
+      conocimiento: item.snapshot.knowledge,
+    },
+  });
+  const view = presentItem(adapted, null);
+  assert.equal(view.prompt, "¿Qué es la inercia?");
+  assert.equal(view.explanation, null);
 });

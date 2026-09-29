@@ -45,3 +45,15 @@ export function presentItem(item: SessionItem, draft: Draft | null) {
     readyToEnqueue: draft.equivalent !== null,
   };
 }
+
+type ServerSnapshot = {
+  question: SessionItem["snapshot"]["question"];
+  knowledge?: SessionItem["snapshot"]["knowledge"];
+  conocimiento?: SessionItem["snapshot"]["knowledge"];
+};
+
+export function toSessionItem(raw: { id: string; snapshot: ServerSnapshot }): SessionItem {
+  const knowledge = raw.snapshot.knowledge ?? raw.snapshot.conocimiento;
+  if (!knowledge) throw new Error("snapshot sin conocimiento");
+  return { id: raw.id, snapshot: { question: raw.snapshot.question, knowledge } };
+}
