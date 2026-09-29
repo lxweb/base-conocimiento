@@ -11,3 +11,5 @@ export { effectiveIntervalDays, nextSchedule } from "./schedule.ts";
 export type { Priority, Schedule } from "./schedule.ts";
 export { selectQueue } from "./queue.ts";
 export type { QueueCandidate } from "./queue.ts";
+export { chooseQuestion } from "./questions.ts";
+export type { QuestionRef } from "./questions.ts";
