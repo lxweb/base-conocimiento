@@ -7,6 +7,7 @@ export type Schedule = {
   consecutiveFullSuccesses: number;
   baseIntervalDays: number;
   dueOn: string | null;
+  hadFullSuccess: boolean;
 };
 
 const FACTOR: Record<Priority, number> = {
@@ -39,6 +40,7 @@ export function nextSchedule(input: {
       consecutiveFullSuccesses: 0,
       baseIntervalDays: 1,
       dueOn: addDays(input.sessionDate, effectiveIntervalDays(1, input.priority)),
+      hadFullSuccess: input.schedule.hadFullSuccess,
     };
   }
   const baseIntervalDays = baseAfterFullSuccess(input.schedule);
@@ -46,5 +48,6 @@ export function nextSchedule(input: {
     consecutiveFullSuccesses: input.schedule.consecutiveFullSuccesses + 1,
     baseIntervalDays,
     dueOn: addDays(input.sessionDate, effectiveIntervalDays(baseIntervalDays, input.priority)),
+    hadFullSuccess: true,
   };
 }

@@ -6,6 +6,7 @@
     "strict": true,
     "rootDir": "src",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
   "include": ["src"]
