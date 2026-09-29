@@ -6,6 +6,7 @@ function candidate(partial: Partial<QueueCandidate> & Pick<QueueCandidate, "cono
   return {
     priority: "normal",
     consecutiveFullSuccesses: 1,
+    hadFullSuccess: true,
     dueOn: "2026-09-28",
     archived: false,
     hasQuestion: true,
@@ -35,6 +36,7 @@ test("toma como máximo cinco nuevos y no rellena con más nuevos", () => {
     candidate({
       conocimientoId: `nuevo-${index}`,
       consecutiveFullSuccesses: 0,
+      hadFullSuccess: false,
       dueOn: null,
       conocimientoPosition: index + 1,
     }),
@@ -50,7 +52,9 @@ test("toma como máximo cinco nuevos y no rellena con más nuevos", () => {
 });
 
 test("llena hasta veinte con vencidos cuando hay menos de cinco nuevos", () => {
-  const nuevos = [candidate({ conocimientoId: "nuevo", consecutiveFullSuccesses: 0, dueOn: null })];
+  const nuevos = [
+    candidate({ conocimientoId: "nuevo", consecutiveFullSuccesses: 0, hadFullSuccess: false, dueOn: null }),
+  ];
   const revisados = Array.from({ length: 20 }, (_, index) =>
     candidate({ conocimientoId: `rev-${index}`, conocimientoPosition: index + 1 }),
   );
@@ -107,4 +111,42 @@ test("ordena por prioridad, atraso y posición manual", () => {
     "alta-reciente",
     "normal-viejo",
   ]);
+});
+
+test("un revisado que falló no ocupa slot de nuevo aunque tenga cero aciertos consecutivos", () => {
+  const nuevos = Array.from({ length: 5 }, (_, index) =>
+    candidate({
+      conocimientoId: `nuevo-${index}`,
+      consecutiveFullSuccesses: 0,
+      hadFullSuccess: false,
+      dueOn: null,
+      conocimientoPosition: index + 1,
+    }),
+  );
+  const fallido = candidate({
+    conocimientoId: "fallido-tras-pleno",
+    consecutiveFullSuccesses: 0,
+    hadFullSuccess: true,
+    dueOn: "2026-09-28",
+    conocimientoPosition: 10,
+  });
+  const ids = selectQueue([...nuevos, fallido], "2026-09-28");
+  assert.equal(ids.length, 6);
+  assert.deepEqual(ids.slice(0, 5), ["nuevo-0", "nuevo-1", "nuevo-2", "nuevo-3", "nuevo-4"]);
+  assert.equal(ids[5], "fallido-tras-pleno");
+});
+
+test("un conocimiento sin acierto pleno previo se selecciona como nuevo aunque ya tenga intervalo base", () => {
+  const ids = selectQueue(
+    [
+      candidate({
+        conocimientoId: "primer-intento-fallido",
+        consecutiveFullSuccesses: 0,
+        hadFullSuccess: false,
+        dueOn: "2026-09-28",
+      }),
+    ],
+    "2026-09-28",
+  );
+  assert.deepEqual(ids, ["primer-intento-fallido"]);
 });

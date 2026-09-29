@@ -5,6 +5,7 @@ export type QueueCandidate = {
   conocimientoId: string;
   priority: Priority;
   consecutiveFullSuccesses: number;
+  hadFullSuccess: boolean;
   dueOn: string | null;
   archived: boolean;
   hasQuestion: boolean;
@@ -47,8 +48,8 @@ export function selectQueue(candidates: QueueCandidate[], today: string): string
     (candidate) => !candidate.archived && candidate.hasQuestion && isDue(candidate, today),
   );
   const sort = (group: QueueCandidate[]) => [...group].sort((a, b) => compare(a, b, today));
-  const nuevos = sort(eligible.filter((candidate) => candidate.consecutiveFullSuccesses === 0)).slice(0, 5);
-  const resto = sort(eligible.filter((candidate) => candidate.consecutiveFullSuccesses > 0)).slice(
+  const nuevos = sort(eligible.filter((candidate) => !candidate.hadFullSuccess)).slice(0, 5);
+  const resto = sort(eligible.filter((candidate) => candidate.hadFullSuccess)).slice(
     0,
     20 - nuevos.length,
   );

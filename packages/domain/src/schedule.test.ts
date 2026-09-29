@@ -6,6 +6,7 @@ const fresh: Schedule = {
   consecutiveFullSuccesses: 0,
   baseIntervalDays: 0,
   dueOn: null,
+  hadFullSuccess: false,
 };
 
 test("los tres primeros aciertos plenos usan 1, 3 y 7 días", () => {
@@ -19,6 +20,7 @@ test("los tres primeros aciertos plenos usan 1, 3 y 7 días", () => {
     consecutiveFullSuccesses: 1,
     baseIntervalDays: 1,
     dueOn: "2026-09-29",
+    hadFullSuccess: true,
   });
 
   const second = nextSchedule({
@@ -45,6 +47,7 @@ test("desde el cuarto acierto multiplica el intervalo base por 2,5", () => {
     consecutiveFullSuccesses: 3,
     baseIntervalDays: 7,
     dueOn: "2026-10-09",
+    hadFullSuccess: true,
   };
   const fourth = nextSchedule({
     schedule: afterThird,
@@ -84,6 +87,7 @@ test("un acierto pleno guarda el intervalo base sin el factor y vence según la 
     consecutiveFullSuccesses: 2,
     baseIntervalDays: 3,
     dueOn: "2026-10-01",
+    hadFullSuccess: true,
   };
   const next = nextSchedule({
     schedule,
@@ -93,6 +97,7 @@ test("un acierto pleno guarda el intervalo base sin el factor y vence según la 
   });
   assert.equal(next.baseIntervalDays, 7);
   assert.equal(next.dueOn, "2026-10-06");
+  assert.equal(next.hadFullSuccess, true);
 });
 
 test("un error reinicia aciertos e intervalo base a un día", () => {
@@ -100,6 +105,7 @@ test("un error reinicia aciertos e intervalo base a un día", () => {
     consecutiveFullSuccesses: 4,
     baseIntervalDays: 18,
     dueOn: "2026-11-01",
+    hadFullSuccess: true,
   };
   const next = nextSchedule({
     schedule,
@@ -111,6 +117,7 @@ test("un error reinicia aciertos e intervalo base a un día", () => {
     consecutiveFullSuccesses: 0,
     baseIntervalDays: 1,
     dueOn: "2026-10-02",
+    hadFullSuccess: true,
   });
 });
 
@@ -119,6 +126,7 @@ test("un parcial no cambia el calendario", () => {
     consecutiveFullSuccesses: 2,
     baseIntervalDays: 3,
     dueOn: null,
+    hadFullSuccess: true,
   };
   const next = nextSchedule({
     schedule,
