@@ -1,5 +1,7 @@
 import Fastify from "fastify";
 import { createPool, migrate, type Pool } from "./db.ts";
+import "./types.ts";
+import { registerAuth } from "./routes/auth.ts";
 
 export type BuildAppOptions = {
   databaseUrl: string;
@@ -20,6 +22,9 @@ export function buildApp(options: BuildAppOptions): { app: Fastify.FastifyInstan
   app.addHook("onClose", async () => {
     await pool.end();
   });
+
+  registerAuth(app);
+  app.get("/materias", async () => []);
 
   return { app, pool };
 }
