@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { createPool, migrate, type Pool } from "./db.ts";
 import "./types.ts";
 import { registerAuth } from "./routes/auth.ts";
+import { registerContent } from "./routes/content.ts";
 
 export type BuildAppOptions = {
   databaseUrl: string;
@@ -24,7 +25,7 @@ export function buildApp(options: BuildAppOptions): { app: Fastify.FastifyInstan
   });
 
   registerAuth(app);
-  app.get("/materias", async () => []);
+  registerContent(app);
 
   return { app, pool };
 }
