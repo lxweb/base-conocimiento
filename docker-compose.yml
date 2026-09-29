@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: conocimiento
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      AUTH_PASSWORD: change-me
+      DATABASE_URL: postgres://postgres:postgres@db:5432/conocimiento
+      MEDIA_DIR: /data/media
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - mediadata:/data/media
+    depends_on:
+      - db
+volumes:
+  pgdata:
+  mediadata:

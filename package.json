@@ -1,8 +1,8 @@
 {
   "name": "base-conocimiento",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": ["packages/*", "server", "desktop"],
   "scripts": {
-    "test": "npm run test -w @base/domain"
+    "test": "npm run test -w @base/domain && npm run test -w @base/server && npm run test -w @base/desktop"
   }
 }
