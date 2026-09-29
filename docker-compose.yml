@@ -10,7 +10,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
   api:
-    build: ./server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     environment:
       AUTH_PASSWORD: change-me
       DATABASE_URL: postgres://postgres:postgres@db:5432/conocimiento
