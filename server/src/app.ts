@@ -4,6 +4,7 @@ import "./types.ts";
 import { registerAuth } from "./routes/auth.ts";
 import { registerContent } from "./routes/content.ts";
 import { registerMedia } from "./routes/media.ts";
+import { registerSessions } from "./routes/sessions.ts";
 
 export type BuildAppOptions = {
   databaseUrl: string;
@@ -28,6 +29,7 @@ export function buildApp(options: BuildAppOptions): { app: Fastify.FastifyInstan
   registerAuth(app);
   registerContent(app);
   registerMedia(app);
+  registerSessions(app);
 
   return { app, pool };
 }
