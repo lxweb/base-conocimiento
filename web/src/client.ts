@@ -1,4 +1,5 @@
 import { ApiError, createApi, type PendingAnswer } from "../../desktop/src/api.ts";
+import { mediaKindFromFile } from "../../desktop/src/renderer/ficha.ts";
 import { enqueueOutbox, listOutbox, removeOutbox } from "./outbox.ts";
 
 const TOKEN_KEY = "bc-token";
@@ -71,6 +72,22 @@ export function createWebClient() {
     },
     saveRelation(fromId: string, toId: string, type: string) {
       return api.saveRelation(fromId, toId, type);
+    },
+    reorder(kind: string, parentId: string | null, orderedIds: string[]) {
+      return api.reorder(kind, parentId, orderedIds);
+    },
+    updateTema(id: string, priority: string) {
+      return api.updateTema(id, { priority });
+    },
+    async uploadMedia(conocimientoId: string, file: File) {
+      const kind = mediaKindFromFile(file);
+      if (!kind) throw new Error("tipo");
+      await api.uploadMedia(conocimientoId, file, file.name, kind);
+    },
+    async previewMedia(id: string) {
+      const blob = await api.fetchMedia(id);
+      if (!blob) return null;
+      return URL.createObjectURL(blob);
     },
     async openSession() {
       const date = localDate();

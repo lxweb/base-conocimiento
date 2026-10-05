@@ -1,7 +1,8 @@
 import { presentItem, toSessionItem, type Draft } from "../../desktop/src/renderer/cola.ts";
 import { mountFicha } from "../../desktop/src/renderer/ficha.ts";
 import { mountLogin } from "../../desktop/src/renderer/login.ts";
-import { mountTree, type Conocimiento, type Materia } from "../../desktop/src/renderer/tree.ts";
+import { findConocimiento, mountTree, type Conocimiento, type Materia } from "../../desktop/src/renderer/tree.ts";
+import { ApiError } from "../../desktop/src/api.ts";
 import { createWebClient, type WebClient } from "./client.ts";
 
 type SessionItemRaw = {
@@ -69,6 +70,14 @@ async function refreshTree(): Promise<void> {
       await client.createConocimiento(temaId, { title, explanation });
       await refreshTree();
     },
+    reorder: async (kind, parentId, orderedIds) => {
+      await client.reorder(kind, parentId, orderedIds);
+      await refreshTree();
+    },
+    updateTema: async (id, priority) => {
+      await client.updateTema(id, priority);
+      await refreshTree();
+    },
     openFicha: (conocimiento, tree) => openFicha(conocimiento, tree),
   });
 }
@@ -102,6 +111,18 @@ function openFicha(conocimiento: Conocimiento, materias: Materia[]): void {
       await client.saveRelation(fromId, toId, type);
       notice.textContent = "Relación guardada.";
     },
+    uploadMedia: async (id, file) => {
+      try {
+        await client.uploadMedia(id, file);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 413) throw new Error("tamano");
+        throw error;
+      }
+      const materias = (await client.loadTree()) as Materia[];
+      const fresh = findConocimiento(materias, id);
+      if (fresh) openFicha(fresh, materias);
+    },
+    previewMedia: (id) => client.previewMedia(id),
   }, notice);
 }
 

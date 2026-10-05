@@ -89,6 +89,38 @@ export function createApi(baseUrl: string, token: () => string | null) {
         body: JSON.stringify({ fromId, toId, type }),
       });
     },
+    reorder(kind: string, parentId: string | null, orderedIds: string[]) {
+      return read("/reorder", {
+        method: "POST",
+        body: JSON.stringify({ kind, parentId, orderedIds }),
+      });
+    },
+    updateTema(id: string, body: { name?: string; priority?: string }) {
+      return read(`/temas/${id}`, { method: "PATCH", body: JSON.stringify(body) });
+    },
+    async uploadMedia(conocimientoId: string, file: Blob, filename: string, kind: "image" | "video") {
+      const response = await fetch(`${baseUrl}/conocimientos/${conocimientoId}/medios`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/octet-stream",
+          "x-filename": filename,
+          "x-kind": kind,
+          ...(token() ? { authorization: `Bearer ${token()}` } : {}),
+        },
+        body: file,
+      });
+      if (response.status === 401) throw new ApiError(401, "token");
+      if (response.status === 413) throw new ApiError(413, "tamano");
+      if (!response.ok) throw new ApiError(response.status, "api");
+      return response.json();
+    },
+    async fetchMedia(id: string): Promise<Blob | null> {
+      const response = await request(`/medios/${id}`);
+      if (response.status === 401) throw new ApiError(401, "token");
+      if (response.status === 404) return null;
+      if (!response.ok) throw new ApiError(response.status, "api");
+      return response.blob();
+    },
     openSession(localDate: string) {
       return read("/sesiones", { method: "POST", body: JSON.stringify({ localDate }) });
     },

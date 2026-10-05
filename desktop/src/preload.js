@@ -12,6 +12,13 @@ contextBridge.exposeInMainWorld("desktop", {
   restore: (id) => ipcRenderer.invoke("restore", id),
   saveQuestion: (conocimientoId, body) => ipcRenderer.invoke("save-question", conocimientoId, body),
   saveRelation: (fromId, toId, type) => ipcRenderer.invoke("save-relation", fromId, toId, type),
+  reorder: (kind, parentId, orderedIds) => ipcRenderer.invoke("reorder", kind, parentId, orderedIds),
+  updateTema: (id, priority) => ipcRenderer.invoke("update-tema", id, priority),
+  uploadMedia: async (id, file) => {
+    const bytes = await file.arrayBuffer();
+    return ipcRenderer.invoke("upload-media", id, { name: file.name, type: file.type, bytes });
+  },
+  previewMedia: (id) => ipcRenderer.invoke("preview-media", id),
   openSession: () => ipcRenderer.invoke("open-session"),
   enqueue: (answer) => ipcRenderer.invoke("enqueue", answer),
   notifyOnline: () => ipcRenderer.send("online"),

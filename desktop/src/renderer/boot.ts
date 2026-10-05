@@ -1,7 +1,9 @@
 import { presentItem, toSessionItem, type Draft } from "./cola.ts";
 import { mountFicha } from "./ficha.ts";
 import { mountLogin } from "./login.ts";
-import { mountTree, type Conocimiento, type Materia } from "./tree.ts";
+import { findConocimiento, mountTree, type Conocimiento, type Materia } from "./tree.ts";
+import { mediaKindFromFile } from "./ficha.ts";
+import { ApiError } from "../api.ts";
 
 type SessionItemRaw = {
   id: string;
@@ -41,6 +43,10 @@ type Desktop = {
   restore(id: string): Promise<void>;
   saveQuestion(conocimientoId: string, body: unknown): Promise<void>;
   saveRelation(fromId: string, toId: string, type: string): Promise<void>;
+  reorder(kind: string, parentId: string | null, orderedIds: string[]): Promise<void>;
+  updateTema(id: string, priority: string): Promise<void>;
+  uploadMedia(id: string, file: File): Promise<void>;
+  previewMedia(id: string): Promise<string | null>;
   openSession(): Promise<{ session?: { items: SessionItemRaw[] }; needsLogin?: boolean; error?: string; offline?: boolean }>;
   enqueue(answer: {
     id: string;
@@ -91,6 +97,14 @@ async function refreshTree(): Promise<void> {
       await window.desktop.createConocimiento(temaId, { title, explanation });
       await refreshTree();
     },
+    reorder: async (kind, parentId, orderedIds) => {
+      await window.desktop.reorder(kind, parentId, orderedIds);
+      await refreshTree();
+    },
+    updateTema: async (id, priority) => {
+      await window.desktop.updateTema(id, priority);
+      await refreshTree();
+    },
     openFicha: (conocimiento, tree) => openFicha(conocimiento, tree),
   });
 }
@@ -124,6 +138,18 @@ function openFicha(conocimiento: Conocimiento, materias: Materia[]): void {
       await window.desktop.saveRelation(fromId, toId, type);
       notice.textContent = "Relación guardada.";
     },
+    uploadMedia: async (id, file) => {
+      try {
+        await window.desktop.uploadMedia(id, file);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 413) throw new Error("tamano");
+        throw error;
+      }
+      const materias = await window.desktop.loadTree();
+      const fresh = findConocimiento(materias, id);
+      if (fresh) openFicha(fresh, materias);
+    },
+    previewMedia: (id) => window.desktop.previewMedia(id),
   }, notice);
 }
 

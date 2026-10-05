@@ -9,12 +9,20 @@ export function oneComplete(options: Array<{ kind: string }>): boolean {
   return options.filter((option) => option.kind === "completa").length === 1;
 }
 
+export function mediaKindFromFile(file: { type: string }): "image" | "video" | null {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type.startsWith("video/")) return "video";
+  return null;
+}
+
 export type FichaActions = {
   update(id: string, body: { title: string; explanation: string; example: string | null; link: string | null }): Promise<void>;
   archive(id: string): Promise<void>;
   restore(id: string): Promise<void>;
   saveQuestion(id: string, question: QuestionDraft): Promise<void>;
   saveRelation(fromId: string, toId: string, type: string): Promise<void>;
+  uploadMedia(id: string, file: File): Promise<void>;
+  previewMedia(id: string): Promise<string | null>;
 };
 
 function labeled(parent: HTMLElement, label: string, value: string, multiline = false): HTMLInputElement | HTMLTextAreaElement {
@@ -54,6 +62,66 @@ export function mountFicha(
     });
   });
   root.append(form);
+
+  const media = document.createElement("section");
+  const mediaHeading = document.createElement("h2");
+  mediaHeading.textContent = "Medios";
+  media.append(mediaHeading);
+  const mediaList = document.createElement("div");
+  media.append(mediaList);
+  for (const medio of conocimiento.medios ?? []) {
+    const row = document.createElement("p");
+    row.textContent = `${medio.kind} · ${medio.id.slice(0, 8)}… `;
+    const preview = document.createElement("button");
+    preview.type = "button";
+    preview.textContent = "Ver";
+    preview.addEventListener("click", () => {
+      void actions.previewMedia(medio.id).then((url) => {
+        if (!url) {
+          notice.textContent = "No se pudo cargar el medio.";
+          return;
+        }
+        const viewer = document.createElement(medio.kind === "video" ? "video" : "img");
+        if (viewer instanceof HTMLVideoElement) {
+          viewer.src = url;
+          viewer.controls = true;
+        } else {
+          viewer.src = url;
+          viewer.alt = "Medio adjunto";
+        }
+        mediaList.append(viewer);
+      });
+    });
+    row.append(preview);
+    mediaList.append(row);
+  }
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = "image/*,video/*";
+  const upload = document.createElement("button");
+  upload.type = "button";
+  upload.textContent = "Adjuntar medio";
+  upload.addEventListener("click", () => {
+    const file = picker.files?.[0];
+    if (!file) {
+      notice.textContent = "Elegí una imagen o un video.";
+      return;
+    }
+    const kind = mediaKindFromFile(file);
+    if (!kind) {
+      notice.textContent = "Solo se admiten imágenes y videos.";
+      return;
+    }
+    notice.textContent = "";
+    void actions.uploadMedia(conocimiento.id, file).catch((error: unknown) => {
+      notice.textContent =
+        error instanceof Error && error.message === "tamano"
+          ? "El archivo supera el tamaño permitido."
+          : "No se pudo adjuntar el medio.";
+    });
+  });
+  media.append(picker, upload);
+  root.append(media);
 
   const questions = document.createElement("section");
   const heading = document.createElement("h2");

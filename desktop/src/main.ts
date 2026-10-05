@@ -4,6 +4,7 @@ import { join, sep } from "node:path";
 import { app, BrowserWindow, ipcMain, protocol } from "electron";
 import { ApiError, createApi } from "./api.ts";
 import { openOutbox, type PendingAnswer } from "./outbox.ts";
+import { mediaKindFromFile } from "./renderer/ficha.ts";
 import { flushOutbox } from "./sync.ts";
 
 const rendererRoot = join(import.meta.dirname, "renderer");
@@ -106,6 +107,24 @@ async function main() {
   ipcMain.handle("save-relation", (_event, fromId: string, toId: string, type: string) =>
     api.saveRelation(fromId, toId, type),
   );
+  ipcMain.handle("reorder", (_event, kind: string, parentId: string | null, orderedIds: string[]) =>
+    api.reorder(kind, parentId, orderedIds),
+  );
+  ipcMain.handle("update-tema", (_event, id: string, priority: string) => api.updateTema(id, { priority }));
+  ipcMain.handle(
+    "upload-media",
+    async (_event, id: string, file: { name: string; type: string; bytes: ArrayBuffer }) => {
+      const kind = mediaKindFromFile({ type: file.type });
+      if (!kind) throw new Error("tipo");
+      return api.uploadMedia(id, Buffer.from(file.bytes), file.name, kind);
+    },
+  );
+  ipcMain.handle("preview-media", async (_event, id: string) => {
+    const blob = await api.fetchMedia(id);
+    if (!blob) return null;
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    return `data:${blob.type || "application/octet-stream"};base64,${buffer.toString("base64")}`;
+  });
   ipcMain.handle("open-session", async () => {
     const date = localDate();
     try {
