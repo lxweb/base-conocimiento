@@ -1,29 +1,48 @@
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: conocimiento
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d conocimiento"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: .
       dockerfile: server/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ${ENV_FILE:-.env}
     environment:
-      AUTH_PASSWORD: change-me
       DATABASE_URL: postgres://postgres:postgres@db:5432/conocimiento
       MEDIA_DIR: /data/media
       PORT: "3000"
     ports:
-      - "3000:3000"
+      - "${API_BIND:-127.0.0.1:10800}:3000"
     volumes:
       - mediadata:/data/media
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
 volumes:
   pgdata:
   mediadata:

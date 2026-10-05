@@ -1,0 +1,13 @@
+{
+  "name": "@base/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/boot.ts --bundle --outfile=dist/assets/boot.js --format=esm --platform=browser && cp index.html dist/index.html",
+    "test": "node --experimental-strip-types --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
