@@ -50,3 +50,34 @@ test("una imagen de más de 10 MB no se adjunta y el conocimiento sigue existien
   assert.equal(tree.json()[0].ramas[0].temas[0].conocimientos[0].medios.length, 0);
   await app.close();
 });
+
+test("GET /medios/:id devuelve el archivo subido con token", async () => {
+  const app = await startTestApp();
+  const token = await login(app);
+  const id = await conocimientoId(app, token);
+  const payload = Buffer.from("png-bytes");
+  const created = await app.inject({
+    method: "POST",
+    url: `/conocimientos/${id}/medios`,
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/octet-stream",
+      "x-filename": "foto.png",
+      "x-kind": "image",
+    },
+    payload,
+  });
+  assert.equal(created.statusCode, 201);
+  const medioId = created.json().id as string;
+  const denied = await app.inject({ method: "GET", url: `/medios/${medioId}` });
+  assert.equal(denied.statusCode, 401);
+  const response = await app.inject({
+    method: "GET",
+    url: `/medios/${medioId}`,
+    headers: { authorization: `Bearer ${token}` },
+  });
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.headers["content-type"], "image/png");
+  assert.equal(response.rawPayload.toString(), "png-bytes");
+  await app.close();
+});

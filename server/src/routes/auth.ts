@@ -24,7 +24,9 @@ export function registerAuth(app: FastifyInstance): void {
   });
 
   app.addHook("onRequest", async (request, reply) => {
-    if (request.url === "/auth/login") return;
+    const path = request.url.split("?")[0];
+    if (path === "/auth/login" || path === "/health") return;
+    if (path === "/" || path === "/index.html" || path.startsWith("/assets/")) return;
     const header = request.headers.authorization ?? "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : "";
     if (!token) return reply.code(401).send({ error: "token" });

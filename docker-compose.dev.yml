@@ -1,0 +1,9 @@
+# Desarrollo local y tests del servidor (Postgres en localhost:5432).
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+services:
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"
+  api:
+    ports:
+      - "127.0.0.1:3000:3000"
